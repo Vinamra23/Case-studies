@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import findspark
+
+findspark.init()
+
+
+# In[2]:
+
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+
+
+# In[3]:
+
+
+spark = SparkSession.builder.appName("Test").getOrCreate()
+
+
+# In[4]:
+
+
+spark
+
+
+# In[5]:
+
+
+sc= spark.sparkContext
+
+
+# In[6]:
+
+
+file1 = sc.textFile('C:/Vinamra/User-pins.txt')
+file1.collect()
+
+
+# In[8]:
+
+
+file2 = sc.textFile('C:/Vinamra/User-searches.txt')
+file2.collect()
+
+
+# In[10]:
+
+
+#Removing Em
+file1_without_empty_line = file1.filter(lambda x:x!="")
+file1_without_empty_line.collect()
+
+
+# In[12]:
+
+
+#file2_without_empty_line
+
+file2_without_empty_line = file2.filter(lambda x:x!="")
+file2_without_empty_line.collect()
+
+
+# In[20]:
+
+
+#file1_array 
+
+file1_array = file1_without_empty_line.map(lambda x:x.split(", "))
+
+
+# In[21]:
+
+
+file1_array.collect()
+
+
+# In[22]:
+
+
+file2_array = file2_without_empty_line.map(lambda x:x.split(", "))
+file2_array.collect()
+
+
+# In[23]:
+
+
+#Converting into Paired RDD or into key-value pair form
+userInfo = file1_array.map(lambda x: (x[0],x[1]))
+userInfo.collect()
+
+
+# In[24]:
+
+
+linkInfo = file2_array.map(lambda x: (x[0],x[1]))
+linkInfo.collect()
+
+
+# In[25]:
+
+
+#Finding old interest by finding common values between new and old searches
+old_interest = linkInfo.intersection(userInfo)
+old_interest.collect()
+
+
+# In[26]:
+
+
+#Finding new interest and for that we will subtract all the old interest with linkinfor or user searches
+new_interest = linkInfo.subtract(old_interest)
+new_interest.collect()
+
+
+# In[27]:
+
+
+#To order it a proper way we will use sortByKey
+
+new_interest_sorted = new_interest.sortByKey()
+new_interest_sorted.collect()
+
+
+# In[ ]:
+
+
+
+
